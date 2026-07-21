@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>新月岛·特殊补正计算器</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+      background: linear-gradient(to bottom, #e3f2ff, #d7cfff);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 0;
+      overflow-y: auto;
+    }
+
+    .calculator {
+      width: 100%;
+      max-width: 460px;
+      background: #ffffff;
+      box-shadow: 0 0 20px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      padding: 14px 12px 10px;
+      overflow: hidden;
+    }
+
+    .title-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #2c3e50;
+      letter-spacing: 2px;
+      line-height: 1.2;
+    }
+
+    .tip-wrapper {
+      position: relative;
+    }
+
+    .tip-btn {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      color: #1e293b;
+      font-size: 0.9rem;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+
+    .tip-btn:hover {
+      background: #cbd5e1;
+    }
+
+    .tip-bubble {
+      position: absolute;
+      top: 120%;
+      right: 0;
+      background: white;
+      color: #1e293b;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 8px 10px;
+      font-size: 0.75rem;
+      line-height: 1.4;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      min-width: 300px;
+      z-index: 200;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s, visibility 0.2s;
+      pointer-events: none;
+    }
+
+    .tip-bubble::before {
+      content: '';
+      position: absolute;
+      top: -6px;
+      right: 10px;
+      width: 12px;
+      height: 12px;
+      background: white;
+      border-left: 1px solid #e2e8f0;
+      border-top: 1px solid #e2e8f0;
+      transform: rotate(45deg);
+    }
+
+    .tip-wrapper:hover .tip-bubble {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .tip-bubble.show {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .main-content {
+      display: flex;
+      gap: 10px;
+      align-items: stretch;           /* 左右列等高 */
+      flex: 1;
+    }
+
+    .left-column,
+    .right-column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .left-column .section:not(:last-child) {
+      margin-bottom: 10px;           /* 武器与装备之间间距固定 */
+    }
+
+    .right-column {
+      /* 饰品固定，星级自动填充剩余空间并垂直居中内容 */
+    }
+
+    .section {
+      flex-shrink: 0;
+      background: #f8fafc;
+      border-radius: 18px;
+      padding: 12px 8px;
+      border: 1px solid #e9ecef;
+    }
+
+    .star-section {
+      flex: 1;                       /* 占据剩余空间，与左列底部对齐 */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;       /* 内容垂直居中，上下自然留白相等 */
+      background: #f8fafc;
+      border-radius: 18px;
+      padding: 12px 8px;
+      border: 1px solid #e9ecef;
+      margin-top: 10px;              /* 与饰品间距固定，不再使用auto */
+    }
+
+    .section h3, .star-section h3 {
+      text-align: center;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    .item-row {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .item-row label {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: #475569;
+      margin-bottom: 3px;
+      white-space: nowrap;
+    }
+
+    /* 自定义下拉选择器 */
+    .custom-select {
+      position: relative;
+      width: 100%;
+      user-select: none;
+    }
+
+    .select-display {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 6px;
+      background: white;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      min-height: 44px;
+      width: 100%;
+      box-sizing: border-box;
+      flex-shrink: 0;
+    }
+
+    .select-display:hover {
+      border-color: #94a3b8;
+    }
+
+    .select-display img {
+      width: 34px;
+      height: 34px;
+      border-radius: 6px;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    .select-text {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .select-text .main-text {
+      font-size: 0.73rem;
+      color: #1e293b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+      line-height: 1.3;
+    }
+
+    .select-text .sub-text {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #475569;
+      white-space: nowrap;
+      line-height: 1.3;
+      text-align: center;
+    }
+
+    .select-display .arrow {
+      font-size: 0.65rem;
+      color: #64748b;
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+
+    .custom-select.open .select-display .arrow {
+      transform: rotate(180deg);
+    }
+
+    .options-panel {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      z-index: 100;
+      overflow: hidden;
+      display: none;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+
+    .custom-select.open .options-panel {
+      display: block;
+    }
+
+    .option-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+
+    .option-item:hover {
+      background: #f1f5f9;
+    }
+
+    .option-item img {
+      width: 34px;
+      height: 34px;
+      border-radius: 6px;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    .option-item .select-text {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .option-item .main-text {
+      font-size: 0.73rem;
+      color: #1e293b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .option-item .sub-text {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #475569;
+    }
+
+    /* 星级控制 */
+    .star-control {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .star-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      background: white;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #1e293b;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+
+    .star-btn:hover {
+      background: #f1f5f9;
+    }
+
+    #starInput {
+      width: 56px;
+      padding: 6px 4px;
+      text-align: center;
+      font-size: 1rem;
+      font-weight: 600;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      color: #1e293b;
+      -moz-appearance: textfield;
+    }
+
+    #starInput::-webkit-outer-spin-button,
+    #starInput::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .star-hint {
+      text-align: center;
+      font-size: 0.65rem;
+      color: #64748b;
+      margin-top: 4px;               /* 减小与输入框间距 */
+    }
+
+    .result-box {
+      margin-top: 10px;
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      color: white;
+      border-radius: 18px;
+      padding: 12px;
+      text-align: center;
+      font-size: 1rem;
+      font-weight: 500;
+      letter-spacing: 1px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+
+    .result-box span {
+      font-size: 1.8rem;
+      font-weight: 700;
+      display: block;
+      margin-top: 2px;
+      transition: color 0.3s;
+    }
+
+    .footer {
+      margin-top: 8px;
+      text-align: center;
+      font-size: 0.6rem;
+      color: #94a3b8;
+      padding: 4px;
+      line-height: 1.6;
+    }
+
+    .footer a {
+      color: #64748b;
+      text-decoration: none;
+      margin: 0 3px;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    .footer .copyright {
+      margin-top: 2px;
+      font-size: 0.55rem;
+      color: #a0aec0;
+    }
+
+    @media (min-width: 768px) {
+      body {
+        background: linear-gradient(to bottom, #e3f2ff, #d7cfff);
+        justify-content: center;
+      }
+      .calculator {
+        margin: 20px 0;
+        border-radius: 32px;
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        max-width: 460px;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .main-content {
+        flex-direction: column;
+      }
+      .star-section {
+        flex: none;
+        margin-top: 10px;
+      }
+      .select-display img, .option-item img {
+        width: 30px;
+        height: 30px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <div class="title-row">
+      <h1>新月岛·补正计算器</h1>
+      <div class="tip-wrapper" id="tipWrapper">
+        <button class="tip-btn" id="tipBtn">!</button>
+        <div class="tip-bubble" id="tipBubble">
+            当前版本：v1.0<br>
+            游戏版本：7.5.1<br> 
+            <br>
+            使用介绍：<br>根据当前持有装备，选择对应的装备和饰品，<br>输入星级后即可计算出总补正值。<br>
+            <br>
+            计算规则：<br>
+            1. 武器：使用【幻境】系列武器，补正值+0。<br>
+            2. 装备：使用【月航员】系列装备，补正值+1~+5。<br>
+            3. 饰品：使用【新月】系列饰品，补正值+1。<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*4新月+1超新月，补正值总计+6。<br>
+            4. 星级：每持有1层【辅助职业大师】补正值+2。<br>
+
+            <br>
+            补正建议：参与【两歧塔·魔之塔】需<strong>35补</strong>以上。<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*该值为开本前暂定。<br>
+            0~9：补正太低了！多参与岛内活动吧。<br>
+            10~24：这个补正只能开荒力之塔...<br>
+            25~34：马上就要达标了！继续努力。<br>
+            35~49：恭喜~补正已经达标了！<br>
+            50~：你是主力输出，加油哦！<br>
+            
+        </div>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <div class="left-column">
+        <div class="section">
+          <h3>⚔️ 武器</h3>
+          <div class="item-row">
+            <label>武器种类</label>
+            <div class="custom-select" id="weapon-select" data-name="weapon">
+              <div class="select-display">
+                <img src="icon/void_weapon.webp" alt="武器图标" />
+                <div class="select-text">
+                  <span class="main-text">🚫 非新月岛系列武器</span>
+                  <span class="sub-text">（+0）</span>
+                </div>
+                <span class="arrow">▼</span>
+              </div>
+              <div class="options-panel"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h3>🛡️ 装备</h3>
+          <div class="item-row"><label>头部</label><div class="custom-select" id="head-select" data-name="head"><div class="select-display"><img src="icon/void_hel.webp" alt="头部图标" /><div class="select-text"><span class="main-text">🚫 非月航员系列装备</span><span class="sub-text">（+0）</span></div><span class="arrow">▼</span></div><div class="options-panel"></div></div></div>
+          <div class="item-row"><label>胸部</label><div class="custom-select" id="chest-select" data-name="chest"><div class="select-display"><img src="icon/void_che.webp" alt="胸部图标" /><div class="select-text"><span class="main-text">🚫 非月航员系列装备</span><span class="sub-text">（+0）</span></div><span class="arrow">▼</span></div><div class="options-panel"></div></div></div>
+          <div class="item-row"><label>手部</label><div class="custom-select" id="hands-select" data-name="hands"><div class="select-display"><img src="icon/void_glv.webp" alt="手部图标" /><div class="select-text"><span class="main-text">🚫 非月航员系列装备</span><span class="sub-text">（+0）</span></div><span class="arrow">▼</span></div><div class="options-panel"></div></div></div>
+          <div class="item-row"><label>腿部</label><div class="custom-select" id="legs-select" data-name="legs"><div class="select-display"><img src="icon/void_btm.webp" alt="腿部图标" /><div class="select-text"><span class="main-text">🚫 非月航员系列装备</span><span class="sub-text">（+0）</span></div><span class="arrow">▼</span></div><div class="options-panel"></div></div></div>
+          <div class="item-row"><label>脚部</label><div class="custom-select" id="feet-select" data-name="feet"><div class="select-display"><img src="icon/void_fet.webp" alt="脚部图标" /><div class="select-text"><span class="main-text">🚫 非月航员系列装备</span><span class="sub-text">（+0）</span></div><span class="arrow">▼</span></div><div class="options-panel"></div></div></div>
+        </div>
+      </div>
+
+      <div class="right-column">
+        <div class="section">
+          <h3>💍 饰品</h3>
+          <div class="item-row"><label>耳坠</label><div class="custom-select" id="earring-select" data-name="earring"><div class="select-display"><img src="icon/void_ear.webp" alt="耳坠图标" /><div class="select-text"><span class="main-text">🚫 非新月系列饰品</span><span class="sub-text">（+0）</span></div><span class="arrow">▼</span></div><div class="options-panel"></div></div></div>
+          <div class="item-row"><label>项链</label><div class="custom-select" id="necklace-select" data-name="necklace"><div class="select-display"><img src="icon/void_nek.webp" alt="项链图标" /><div class="select-text"><span class="main-text">🚫 非新月系列饰品</span><span class="sub-text">（+0）</span></div><span class="arrow">▼</span></div><div class="options-panel"></div></div></div>
+          <div class="item-row"><label>手环</label><div class="custom-select" id="bracelet-select" data-name="bracelet"><div class="select-display"><img src="icon/void_wri.webp" alt="手环图标" /><div class="select-text"><span class="main-text">🚫 非新月系列饰品</span><span class="sub-text">（+0）</span></div><span class="arrow">▼</span></div><div class="options-panel"></div></div></div>
+          <div class="item-row"><label>右戒</label><div class="custom-select" id="leftRing-select" data-name="leftRing"><div class="select-display"><img src="icon/void_rin.webp" alt="左戒图标" /><div class="select-text"><span class="main-text">🚫 非新月系列戒指</span><span class="sub-text">（+0）</span></div><span class="arrow">▼</span></div><div class="options-panel"></div></div></div>
+          <div class="item-row"><label>左戒</label><div class="custom-select" id="rightRing-select" data-name="rightRing"><div class="select-display"><img src="icon/void_rin.webp" alt="右戒图标" /><div class="select-text"><span class="main-text">🚫 非超新月系列戒指</span><span class="sub-text">（+0）</span></div><span class="arrow">▼</span></div><div class="options-panel"></div></div></div>
+        </div>
+
+        <div class="star-section">
+          <h3>⭐ 星级</h3>
+          <div class="star-control">
+            <button type="button" class="star-btn" id="starMinus">−</button>
+            <input type="number" id="starInput" value="0" min="0" max="26" inputmode="numeric">
+            <button type="button" class="star-btn" id="starPlus">+</button>
+          </div>
+          <div class="star-hint">0 ~ 26 星，每星 +2</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-box">
+      当前补正值
+      <span id="bonusValue">0</span>
+    </div>
+
+    <div class="footer">
+      Made by <a href="https://space.bilibili.com/24583108" target="_blank">崩小石Xer</a>
+      <div>
+        <a href="https://你的项目主页" target="_blank">项目地址</a> | 
+        <a href="https://qm.qq.com/q/M15Y0ivu0y" target="_blank">我要参团</a>
+      </div>
+      <div class="copyright">
+        该网页由AI协助制作&nbsp;&nbsp; &nbsp;&nbsp;图标信息等来源于灰机Wiki&nbsp;&nbsp; &nbsp;&nbsp;使用的游戏图片其版权为SQUARE ENIX
+      </div>
+      <div class="copyright" style="font-size: 0.5rem;">
+        Copyright (C) 2010 - 2026 SQUARE ENIX CO., LTD. All Rights Reserved.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---------- 提示气泡交互 ----------
+    const tipBtn = document.getElementById('tipBtn');
+    const tipBubble = document.getElementById('tipBubble');
+    tipBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      tipBubble.classList.toggle('show');
+    });
+    document.addEventListener('click', (e) => {
+      if (!tipBtn.contains(e.target) && !tipBubble.contains(e.target)) {
+        tipBubble.classList.remove('show');
+      }
+    });
+    tipBubble.addEventListener('click', (e) => e.stopPropagation());
+
+    // ---------- 图标路径映射 ----------
+    const partMap = {
+      head: 'hel',
+      chest: 'che',
+      hands: 'glv',
+      legs: 'btm',
+      feet: 'fet'
+    };
+
+    // 装备选项：+0用void，+1~+3用_S，+4~+5用_N
+    function buildEquipOptions(part) {
+      return [
+        { value: 0, main: '🚫 非月航员系列装备', sub: '（+0）', img: `icon/void_${part}.webp` },
+        { value: 1, main: '月航员系列装备', sub: '银币兑换（+1）', img: `icon/moon_${part}_S.webp` },
+        { value: 2, main: '月航员系列装备+1', sub: '金币银币强化（+2）', img: `icon/moon_${part}_S.webp` },
+        { value: 3, main: '月航员系列装备+2', sub: '魔石金丝强化（+3）', img: `icon/moon_${part}_S.webp` },
+        { value: 4, main: '月航员系列装备+3', sub: '未知来源（+4）', img: `icon/moon_${part}_N.webp` },
+        { value: 5, main: '月航员系列装备+4', sub: '未知来源（+5）', img: `icon/moon_${part}_N.webp` }
+      ];
+    }
+
+    const weaponOptions = [
+      { value: 0, main: '🚫 非新月岛系列武器', sub: '（+0）', img: 'icon/void_weapon.webp' },
+      { value: 0, main: '幻境系列武器', sub: '幻境武器任务（+0）', img: 'icon/moon_weapon.webp' }
+    ];
+
+    const accessoryOptions = {
+      earring: [
+        { value: 0, main: '🚫 非新月系列饰品', sub: '（+0）', img: 'icon/void_ear.webp' },
+        { value: 1, main: '新月系列饰品', sub: '岛内掉落（+1）', img: 'icon/moon_ear.webp' }
+      ],
+      necklace: [
+        { value: 0, main: '🚫 非新月系列饰品', sub: '（+0）', img: 'icon/void_nek.webp' },
+        { value: 1, main: '新月系列饰品', sub: '岛内掉落（+1）', img: 'icon/moon_nek.webp' }
+      ],
+      bracelet: [
+        { value: 0, main: '🚫 非新月系列饰品', sub: '（+0）', img: 'icon/void_wri.webp' },
+        { value: 1, main: '新月系列饰品', sub: '岛内掉落（+1）', img: 'icon/moon_wri.webp' }
+      ],
+      leftRing: [
+        { value: 0, main: '🚫 非新月系列戒指', sub: '（+0）', img: 'icon/void_rin.webp' },
+        { value: 1, main: '新月系列饰品', sub: '岛内掉落（+1）', img: 'icon/moon_rin_l.webp' }
+      ]
+    };
+
+    const rightRingOptions = [
+      { value: 0, main: '🚫 非超新月系列戒指', sub: '（+0）', img: 'icon/void_rin.webp' },
+      { value: 2, main: '超新月系列饰品', sub: '岛内掉落（+2）', img: 'icon/moon_rin_r.webp' }
+    ];
+
+    function generateOptionHTML(opt) {
+      return `
+        <div class="option-item" data-value="${opt.value}" data-img="${opt.img}" data-main="${opt.main}" data-sub="${opt.sub}">
+          <img src="${opt.img}" alt="" />
+          <div class="select-text">
+            <span class="main-text">${opt.main}</span>
+            <span class="sub-text">${opt.sub}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function populatePanel(containerId, optionsArray) {
+      const panel = document.getElementById(containerId).querySelector('.options-panel');
+      panel.innerHTML = optionsArray.map(opt => generateOptionHTML(opt)).join('');
+    }
+
+    populatePanel('weapon-select', weaponOptions);
+    ['head','chest','hands','legs','feet'].forEach(name => {
+      populatePanel(name + '-select', buildEquipOptions(partMap[name]));
+    });
+    ['earring','necklace','bracelet','leftRing'].forEach(name => {
+      populatePanel(name + '-select', accessoryOptions[name]);
+    });
+    populatePanel('rightRing-select', rightRingOptions);
+
+    document.querySelectorAll('.custom-select').forEach(select => {
+      const display = select.querySelector('.select-display');
+      const panel = select.querySelector('.options-panel');
+      const displayImg = display.querySelector('img');
+      const mainTextSpan = display.querySelector('.main-text');
+      const subTextSpan = display.querySelector('.sub-text');
+
+      display.addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.querySelectorAll('.custom-select.open').forEach(s => { if (s !== select) s.classList.remove('open'); });
+        select.classList.toggle('open');
+      });
+
+      panel.addEventListener('click', (e) => {
+        const optionItem = e.target.closest('.option-item');
+        if (!optionItem) return;
+        const value = optionItem.dataset.value;
+        const img = optionItem.dataset.img;
+        const main = optionItem.dataset.main;
+        const sub = optionItem.dataset.sub;
+
+        displayImg.src = img;
+        mainTextSpan.textContent = main;
+        subTextSpan.textContent = sub;
+        select.dataset.value = value;
+        select.classList.remove('open');
+        calculateTotal();
+      });
+    });
+
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.custom-select.open').forEach(s => s.classList.remove('open'));
+    });
+
+    function getSelectValue(name) {
+      const container = document.getElementById(name + '-select');
+      return parseInt(container.dataset.value) || 0;
+    }
+
+    document.querySelectorAll('.custom-select').forEach(s => s.dataset.value = '0');
+
+    const starInput = document.getElementById('starInput');
+    document.getElementById('starMinus').addEventListener('click', () => {
+      let val = parseInt(starInput.value) || 0;
+      val = Math.max(0, val - 1);
+      starInput.value = val;
+      calculateTotal();
+    });
+    document.getElementById('starPlus').addEventListener('click', () => {
+      let val = parseInt(starInput.value) || 0;
+      val = Math.min(26, val + 1);
+      starInput.value = val;
+      calculateTotal();
+    });
+    starInput.addEventListener('input', function() {
+      let val = parseInt(this.value);
+      if (isNaN(val)) this.value = 0;
+      else if (val < 0) this.value = 0;
+      else if (val > 26) this.value = 26;
+      else this.value = val;
+      calculateTotal();
+    });
+    starInput.addEventListener('blur', function() {
+      if (this.value === '') this.value = 0;
+      calculateTotal();
+    });
+
+    // 根据数值返回颜色
+    function getColorByValue(val) {
+      if (val < 10) return '#b91c1c';      // 深红
+      if (val < 25) return '#f59e0b';      // 橙
+      if (val < 35) return '#eab308';      // 黄
+      if (val < 50) return '#16a34a';      // 绿
+      return '#22c55e';                    // 亮绿 (50以上)
+    }
+
+    function calculateTotal() {
+      const weaponBonus = getSelectValue('weapon');
+      const equipIds = ['head','chest','hands','legs','feet'];
+      let equipTotal = equipIds.reduce((sum, id) => sum + getSelectValue(id), 0);
+
+      let accTotal = 0;
+      let allMoon = true;
+      ['earring','necklace','bracelet','leftRing'].forEach(id => {
+        const val = getSelectValue(id);
+        accTotal += val;
+        if (val !== 1) allMoon = false;
+      });
+      let rightRingBonus = allMoon ? getSelectValue('rightRing') : 0;
+      accTotal += rightRingBonus;
+
+      const starVal = parseInt(starInput.value) || 0;
+      const total = weaponBonus + equipTotal + accTotal + (starVal * 2);
+
+      const bonusSpan = document.getElementById('bonusValue');
+      bonusSpan.textContent = total;
+      bonusSpan.style.color = getColorByValue(total);
+    }
+
+    // 初始计算并应用颜色
+    calculateTotal();
+  </script>
+</body>
+</html>
