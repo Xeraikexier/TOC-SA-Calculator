@@ -73,55 +73,90 @@
       background: #cbd5e1;
     }
 
-    .tip-bubble {
-      position: absolute;
-      top: 120%;
-      right: 0;
+    /* ---------- 居中弹窗通用样式 ---------- */
+    .tip-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 999;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .tip-overlay.show {
+      display: flex;
+    }
+
+    .tip-modal {
       background: white;
+      border-radius: 16px;
+      padding: 20px 24px;
+      max-width: 460px;
+      width: calc(100% - 40px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      position: relative;
+      text-align: left;
+      font-size: 0.85rem;
+      line-height: 1.7;
       color: #1e293b;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 8px 10px;
-      font-size: 0.75rem;
-      line-height: 1.4;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-      min-width: 300px;
-      z-index: 200;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.2s, visibility 0.2s;
-      pointer-events: none;
+      max-height: 80vh;
+      overflow-y: auto;
     }
 
-    .tip-bubble::before {
-      content: '';
+    .tip-close {
       position: absolute;
-      top: -6px;
-      right: 10px;
-      width: 12px;
-      height: 12px;
-      background: white;
-      border-left: 1px solid #e2e8f0;
-      border-top: 1px solid #e2e8f0;
-      transform: rotate(45deg);
+      top: 8px;
+      right: 12px;
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: #64748b;
     }
 
-    .tip-wrapper:hover .tip-bubble {
-      opacity: 1;
-      visibility: visible;
-      pointer-events: auto;
+    /* 弹窗内链接样式 */
+    .modal-link-list {
+      list-style: none;
+      padding: 0;
+      margin: 12px 0 0;
     }
 
-    .tip-bubble.show {
-      opacity: 1;
-      visibility: visible;
-      pointer-events: auto;
+    .modal-link-list li {
+      margin-bottom: 10px;
+    }
+
+    .modal-link-list a {
+      display: flex;
+      align-items: center;
+      padding: 10px 14px;
+      background: #f8fafc;
+      border-radius: 14px;
+      color: #1e293b;
+      text-decoration: none;
+      transition: background 0.2s;
+      font-weight: 500;
+    }
+
+    .modal-link-list a:hover {
+      background: #e2e8f0;
+    }
+
+    .link-content {
+      flex: 1;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .main-content {
       display: flex;
       gap: 10px;
-      align-items: stretch;           /* 左右列等高 */
+      align-items: stretch;
       flex: 1;
     }
 
@@ -134,11 +169,7 @@
     }
 
     .left-column .section:not(:last-child) {
-      margin-bottom: 10px;           /* 武器与装备之间间距固定 */
-    }
-
-    .right-column {
-      /* 饰品固定，星级自动填充剩余空间并垂直居中内容 */
+      margin-bottom: 10px;
     }
 
     .section {
@@ -150,15 +181,15 @@
     }
 
     .star-section {
-      flex: 1;                       /* 占据剩余空间，与左列底部对齐 */
+      flex: 1;
       display: flex;
       flex-direction: column;
-      justify-content: center;       /* 内容垂直居中，上下自然留白相等 */
+      justify-content: center;
       background: #f8fafc;
       border-radius: 18px;
       padding: 12px 8px;
       border: 1px solid #e9ecef;
-      margin-top: 10px;              /* 与饰品间距固定，不再使用auto */
+      margin-top: 10px;
     }
 
     .section h3, .star-section h3 {
@@ -371,7 +402,7 @@
       text-align: center;
       font-size: 0.65rem;
       color: #64748b;
-      margin-top: 4px;               /* 减小与输入框间距 */
+      margin-top: 4px;
     }
 
     .result-box {
@@ -452,30 +483,122 @@
   <div class="calculator">
     <div class="title-row">
       <h1>新月岛·补正计算器</h1>
-      <div class="tip-wrapper" id="tipWrapper">
+      <div class="tip-wrapper">
         <button class="tip-btn" id="tipBtn">!</button>
-        <div class="tip-bubble" id="tipBubble">
-            当前版本：v1.0<br>
-            游戏版本：7.5.1<br> 
-            <br>
-            使用介绍：<br>根据当前持有装备，选择对应的装备和饰品，<br>输入星级后即可计算出总补正值。<br>
-            <br>
-            计算规则：<br>
-            1. 武器：使用【幻境】系列武器，补正值+0。<br>
-            2. 装备：使用【月航员】系列装备，补正值+1~+5。<br>
-            3. 饰品：使用【新月】系列饰品，补正值+1。<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*4新月+1超新月，补正值总计+6。<br>
-            4. 星级：每持有1层【辅助职业大师】补正值+2。<br>
+      </div>
+    </div>
 
-            <br>
-            补正建议：参与【两歧塔·魔之塔】需<strong>35补</strong>以上。<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*该值为开本前暂定。<br>
-            0~9：补正太低了！多参与岛内活动吧。<br>
-            10~24：这个补正只能开荒力之塔...<br>
-            25~34：马上就要达标了！继续努力。<br>
-            35~49：恭喜~补正已经达标了！<br>
-            50~：你是主力输出，加油哦！<br>
-            
+    <!-- 弹窗1：使用说明 -->
+    <div class="tip-overlay" id="tipOverlay">
+      <div class="tip-modal">
+        <button class="tip-close" id="tipClose">✕</button>
+        <div class="tip-modal-content">
+          当前版本：v1.1<br>
+          游戏版本：7.5.1<br> 
+          <br>
+          使用介绍：<br>根据当前持有装备，选择对应的装备和饰品，<br>输入星级后即可计算出总补正值。<br>
+          <br>
+          计算规则：<br>
+          1. 武器：使用【幻境】系列武器，补正值+0。<br>
+          2. 装备：使用【月航员】系列装备，补正值+1~+5。<br>
+          3. 饰品：使用【新月】系列饰品，补正值+1。<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*4新月+1超新月，补正值总计+6。<br>
+          4. 星级：每持有1层【辅助职业大师】补正值+2。<br>
+          <br>
+          补正建议：参与【两歧塔·魔之塔】需<strong>35补</strong>以上。<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*该值为开本前暂定。<br>
+          0~9：补正太低了！多参与岛内活动吧。<br>
+          10~24：这个补正只能开荒力之塔...<br>
+          25~34：马上就要达标了！继续努力。<br>
+          35~49：恭喜~补正已经达标了！<br>
+          50~：你是主力输出，加油哦！<br>
+        </div>
+      </div>
+    </div>
+
+    <!-- 弹窗2：更新日志 -->
+    <div class="tip-overlay" id="updateOverlay">
+      <div class="tip-modal">
+        <button class="tip-close" id="updateClose">✕</button>
+        <div class="tip-modal-content">
+          <strong>更新日志</strong>
+          <div style="text-align: center; font-weight: bold; margin: 10px 0 15px;">当前版本 v1.1</div>
+          <strong>v1.0 (2026-07-21)</strong><br>
+          - 初始版本发布。<br>
+          <br>
+          <strong>v1.1 (2026-07-23)</strong><br>
+          - 基于Wiki的数据来源，修改原先的【0~26星】为【0~24星】。<br>
+          - 修改了页尾的布局。<br>
+          - 修改了各二级窗口的弹出逻辑，并优化了排版。<br>
+          - 优化了【我要参团】的跳转逻辑，可跳转至不同团群。<br>
+          - 新增了【其它工具】的跳转用链接，可跳转至其它工具与攻略。<br>
+          （暂未实装跳转目标）
+        </div>
+      </div>
+    </div>
+
+    <!-- 弹窗3：我要参团（去掉圆圈，仅保留emoji，排版同其它工具） -->
+    <div class="tip-overlay" id="groupOverlay">
+      <div class="tip-modal">
+        <button class="tip-close" id="groupClose">✕</button>
+        <div class="tip-modal-content">
+          <strong>群聊链接</strong>
+          <ul class="modal-link-list">
+            <!-- 1群 -->
+            <li>
+              <a href="https://qm.qq.com/q/pfiHAumKZi" target="_blank">
+                <span class="link-content">🔥 新月岛·魔之塔 1群</span>
+              </a>
+            </li>
+            <!-- 2群 -->
+            <li>
+              <a href="https://qm.qq.com/q/d2gMJZRQEo" target="_blank">
+                <span class="link-content">🔥 新月岛·魔之塔 2群</span>
+              </a>
+            </li>
+            <!-- 3群（推荐） -->
+            <li>
+              <a href="https://qm.qq.com/q/eik0tLVBL2" target="_blank">
+                <span class="link-content">🌟 新月岛·魔之塔 3群（荐）</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 弹窗4：其它工具（跳转已停用） -->
+    <div class="tip-overlay" id="toolsOverlay">
+      <div class="tip-modal">
+        <button class="tip-close" id="toolsClose">✕</button>
+        <div class="tip-modal-content">
+          <strong>攻略相关（暂未实装）</strong>
+          <ul class="modal-link-list">
+            <!-- 📚 攻略链接1：停用 -->
+            <!-- 原链接: https://实际链接1 -->
+            <li>
+              <a href="#" onclick="return false;" target="_blank">
+                <span class="link-content">📚 【MMW攻略组】两歧塔·魔之塔文档攻略</span>
+              </a>
+            </li>
+            <!-- 🗺️ 攻略链接2：停用 -->
+            <!-- 原链接: https://实际链接2 -->
+            <li>
+              <a href="#" onclick="return false;" target="_blank">
+                <span class="link-content">🗺️ 【蜃景幻界新月岛 北征之章】岛内攻略笔记</span>
+              </a>
+            </li>
+          </ul>
+          <strong style="display:block; margin-top:15px;">工具相关（暂未实装）</strong>
+          <ul class="modal-link-list">
+            <!-- 📝 工具链接：停用 -->
+            <!-- 原链接: https://实际链接3 -->
+            <li>
+              <a href="#" onclick="return false;" target="_blank">
+                <span class="link-content">📝 【蜃景幻界新月岛 北征之章】岛内CE史官记录工具</span>
+              </a>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
@@ -516,18 +639,18 @@
           <div class="item-row"><label>耳坠</label><div class="custom-select" id="earring-select" data-name="earring"><div class="select-display"><img src="icon/void_ear.webp" alt="耳坠图标" /><div class="select-text"><span class="main-text">🚫 非新月系列饰品</span><span class="sub-text">（+0）</span></div><span class="arrow">▼</span></div><div class="options-panel"></div></div></div>
           <div class="item-row"><label>项链</label><div class="custom-select" id="necklace-select" data-name="necklace"><div class="select-display"><img src="icon/void_nek.webp" alt="项链图标" /><div class="select-text"><span class="main-text">🚫 非新月系列饰品</span><span class="sub-text">（+0）</span></div><span class="arrow">▼</span></div><div class="options-panel"></div></div></div>
           <div class="item-row"><label>手环</label><div class="custom-select" id="bracelet-select" data-name="bracelet"><div class="select-display"><img src="icon/void_wri.webp" alt="手环图标" /><div class="select-text"><span class="main-text">🚫 非新月系列饰品</span><span class="sub-text">（+0）</span></div><span class="arrow">▼</span></div><div class="options-panel"></div></div></div>
-          <div class="item-row"><label>右戒</label><div class="custom-select" id="leftRing-select" data-name="leftRing"><div class="select-display"><img src="icon/void_rin.webp" alt="左戒图标" /><div class="select-text"><span class="main-text">🚫 非新月系列戒指</span><span class="sub-text">（+0）</span></div><span class="arrow">▼</span></div><div class="options-panel"></div></div></div>
-          <div class="item-row"><label>左戒</label><div class="custom-select" id="rightRing-select" data-name="rightRing"><div class="select-display"><img src="icon/void_rin.webp" alt="右戒图标" /><div class="select-text"><span class="main-text">🚫 非超新月系列戒指</span><span class="sub-text">（+0）</span></div><span class="arrow">▼</span></div><div class="options-panel"></div></div></div>
+          <div class="item-row"><label>左戒</label><div class="custom-select" id="leftRing-select" data-name="leftRing"><div class="select-display"><img src="icon/void_rin.webp" alt="左戒图标" /><div class="select-text"><span class="main-text">🚫 非新月系列戒指</span><span class="sub-text">（+0）</span></div><span class="arrow">▼</span></div><div class="options-panel"></div></div></div>
+          <div class="item-row"><label>右戒</label><div class="custom-select" id="rightRing-select" data-name="rightRing"><div class="select-display"><img src="icon/void_rin.webp" alt="右戒图标" /><div class="select-text"><span class="main-text">🚫 非超新月系列戒指</span><span class="sub-text">（+0）</span></div><span class="arrow">▼</span></div><div class="options-panel"></div></div></div>
         </div>
 
         <div class="star-section">
           <h3>⭐ 星级</h3>
           <div class="star-control">
             <button type="button" class="star-btn" id="starMinus">−</button>
-            <input type="number" id="starInput" value="0" min="0" max="26" inputmode="numeric">
+            <input type="number" id="starInput" value="0" min="0" max="24" inputmode="numeric">
             <button type="button" class="star-btn" id="starPlus">+</button>
           </div>
-          <div class="star-hint">0 ~ 26 星，每星 +2</div>
+          <div class="star-hint">0 ~ 24 星，每星 +2</div>
         </div>
       </div>
     </div>
@@ -540,8 +663,10 @@
     <div class="footer">
       Made by <a href="https://space.bilibili.com/24583108" target="_blank">崩小石Xer</a>
       <div>
-        <a href="https://github.com/Xeraikexier/TOC-SA-Calculator" target="_blank">项目地址</a> | 
-        <a href="https://qm.qq.com/q/M15Y0ivu0y" target="_blank">我要参团</a>
+        <a href="https://github.com/Xeraikexier/SA-TOC-Calculator" target="_blank">项目地址</a> | 
+        <a href="#" id="updateLogLink">更新日志</a> | 
+        <a href="#" id="groupLink">我要参团</a> | 
+        <a href="#" id="toolsLink">其它工具</a>
       </div>
       <div class="copyright">
         该网页由AI协助制作&nbsp;&nbsp; &nbsp;&nbsp;图标信息等来源于灰机Wiki&nbsp;&nbsp; &nbsp;&nbsp;使用的游戏图片其版权为SQUARE ENIX
@@ -553,19 +678,33 @@
   </div>
 
   <script>
-    // ---------- 提示气泡交互 ----------
-    const tipBtn = document.getElementById('tipBtn');
-    const tipBubble = document.getElementById('tipBubble');
-    tipBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      tipBubble.classList.toggle('show');
-    });
-    document.addEventListener('click', (e) => {
-      if (!tipBtn.contains(e.target) && !tipBubble.contains(e.target)) {
-        tipBubble.classList.remove('show');
-      }
-    });
-    tipBubble.addEventListener('click', (e) => e.stopPropagation());
+    // ---------- 弹窗通用函数 ----------
+    function openOverlay(overlayId) {
+      document.getElementById(overlayId).classList.add('show');
+    }
+    function closeOverlay(overlayId) {
+      document.getElementById(overlayId).classList.remove('show');
+    }
+
+    // 使用说明弹窗
+    document.getElementById('tipBtn').addEventListener('click', () => openOverlay('tipOverlay'));
+    document.getElementById('tipClose').addEventListener('click', () => closeOverlay('tipOverlay'));
+    document.getElementById('tipOverlay').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeOverlay('tipOverlay'); });
+
+    // 更新日志弹窗
+    document.getElementById('updateLogLink').addEventListener('click', (e) => { e.preventDefault(); openOverlay('updateOverlay'); });
+    document.getElementById('updateClose').addEventListener('click', () => closeOverlay('updateOverlay'));
+    document.getElementById('updateOverlay').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeOverlay('updateOverlay'); });
+
+    // 我要参团弹窗
+    document.getElementById('groupLink').addEventListener('click', (e) => { e.preventDefault(); openOverlay('groupOverlay'); });
+    document.getElementById('groupClose').addEventListener('click', () => closeOverlay('groupOverlay'));
+    document.getElementById('groupOverlay').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeOverlay('groupOverlay'); });
+
+    // 其它工具弹窗
+    document.getElementById('toolsLink').addEventListener('click', (e) => { e.preventDefault(); openOverlay('toolsOverlay'); });
+    document.getElementById('toolsClose').addEventListener('click', () => closeOverlay('toolsOverlay'));
+    document.getElementById('toolsOverlay').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeOverlay('toolsOverlay'); });
 
     // ---------- 图标路径映射 ----------
     const partMap = {
@@ -576,7 +715,6 @@
       feet: 'fet'
     };
 
-    // 装备选项：+0用void，+1~+3用_S，+4~+5用_N
     function buildEquipOptions(part) {
       return [
         { value: 0, main: '🚫 非月航员系列装备', sub: '（+0）', img: `icon/void_${part}.webp` },
@@ -693,7 +831,7 @@
     });
     document.getElementById('starPlus').addEventListener('click', () => {
       let val = parseInt(starInput.value) || 0;
-      val = Math.min(26, val + 1);
+      val = Math.min(24, val + 1);
       starInput.value = val;
       calculateTotal();
     });
@@ -701,7 +839,7 @@
       let val = parseInt(this.value);
       if (isNaN(val)) this.value = 0;
       else if (val < 0) this.value = 0;
-      else if (val > 26) this.value = 26;
+      else if (val > 24) this.value = 24;
       else this.value = val;
       calculateTotal();
     });
@@ -710,13 +848,12 @@
       calculateTotal();
     });
 
-    // 根据数值返回颜色
     function getColorByValue(val) {
-      if (val < 10) return '#b91c1c';      // 深红
-      if (val < 25) return '#f59e0b';      // 橙
-      if (val < 35) return '#eab308';      // 黄
-      if (val < 50) return '#16a34a';      // 绿
-      return '#22c55e';                    // 亮绿 (50以上)
+      if (val < 10) return '#b91c1c';
+      if (val < 25) return '#f59e0b';
+      if (val < 35) return '#eab308';
+      if (val < 50) return '#16a34a';
+      return '#22c55e';
     }
 
     function calculateTotal() {
@@ -742,7 +879,6 @@
       bonusSpan.style.color = getColorByValue(total);
     }
 
-    // 初始计算并应用颜色
     calculateTotal();
   </script>
 </body>
