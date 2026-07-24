@@ -145,9 +145,19 @@
       background: #e2e8f0;
     }
 
-    .link-content {
+    /* emoji 与文字分离布局 */
+    .emoji-part {
+      width: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 1rem;
+    }
+
+    .text-part {
       flex: 1;
-      min-width: 0;
+      text-align: left;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -484,7 +494,7 @@
     <div class="title-row">
       <h1>新月岛·补正计算器</h1>
       <div class="tip-wrapper">
-        <button class="tip-btn" id="tipBtn">!</button>
+        <button class="tip-btn" id="tipBtn">❕</button>
       </div>
     </div>
 
@@ -493,7 +503,7 @@
       <div class="tip-modal">
         <button class="tip-close" id="tipClose">✕</button>
         <div class="tip-modal-content">
-          当前版本：v1.1<br>
+          当前版本：v1.2<br>
           游戏版本：7.5.1<br> 
           <br>
           使用介绍：<br>根据当前持有装备，选择对应的装备和饰品，<br>输入星级后即可计算出总补正值。<br>
@@ -522,7 +532,7 @@
         <button class="tip-close" id="updateClose">✕</button>
         <div class="tip-modal-content">
           <strong>更新日志</strong>
-          <div style="text-align: center; font-weight: bold; margin: 10px 0 15px;">当前版本 v1.1</div>
+          <div style="text-align: center; font-weight: bold; margin: 10px 0 15px;">当前版本 v1.2</div>
           <strong>v1.0 (2026-07-21)</strong><br>
           - 初始版本发布。<br>
           <br>
@@ -532,34 +542,36 @@
           - 修改了各二级窗口的弹出逻辑，并优化了排版。<br>
           - 优化了【我要参团】的跳转逻辑，可跳转至不同团群。<br>
           - 新增了【其它工具】的跳转用链接，可跳转至其它工具与攻略。<br>
-          （暂未实装跳转目标）
+          <br>
+          <strong>v1.2 (2026-07-24)</strong><br>
+          - 优化了页面排版，开放了文档攻略链接的跳转。
         </div>
       </div>
     </div>
 
-    <!-- 弹窗3：我要参团（去掉圆圈，仅保留emoji，排版同其它工具） -->
+    <!-- 弹窗3：我要参团 -->
     <div class="tip-overlay" id="groupOverlay">
       <div class="tip-modal">
         <button class="tip-close" id="groupClose">✕</button>
         <div class="tip-modal-content">
           <strong>群聊链接</strong>
           <ul class="modal-link-list">
-            <!-- 1群 -->
             <li>
               <a href="https://qm.qq.com/q/pfiHAumKZi" target="_blank">
-                <span class="link-content">🔥 新月岛·魔之塔 1群</span>
+                <span class="emoji-part">🔥</span>
+                <span class="text-part">新月岛·魔之塔 1群</span>
               </a>
             </li>
-            <!-- 2群 -->
             <li>
               <a href="https://qm.qq.com/q/d2gMJZRQEo" target="_blank">
-                <span class="link-content">🔥 新月岛·魔之塔 2群</span>
+                <span class="emoji-part">🔥</span>
+                <span class="text-part">新月岛·魔之塔 2群</span>
               </a>
             </li>
-            <!-- 3群（推荐） -->
             <li>
               <a href="https://qm.qq.com/q/eik0tLVBL2" target="_blank">
-                <span class="link-content">🌟 新月岛·魔之塔 3群（荐）</span>
+                <span class="emoji-part">🌟</span>
+                <span class="text-part">新月岛·魔之塔 3群（荐）</span>
               </a>
             </li>
           </ul>
@@ -567,35 +579,44 @@
       </div>
     </div>
 
-    <!-- 弹窗4：其它工具（跳转已停用） -->
+    <!-- 弹窗4：工具链接 -->
     <div class="tip-overlay" id="toolsOverlay">
       <div class="tip-modal">
         <button class="tip-close" id="toolsClose">✕</button>
         <div class="tip-modal-content">
-          <strong>攻略相关（暂未实装）</strong>
+          <strong>攻略相关</strong>
           <ul class="modal-link-list">
-            <!-- 📚 攻略链接1：停用 -->
-            <!-- 原链接: https://实际链接1 -->
             <li>
-              <a href="#" onclick="return false;" target="_blank">
-                <span class="link-content">📚 【MMW攻略组】两歧塔·魔之塔文档攻略</span>
+              <a href="https://mmw-ffxiv.feishu.cn/wiki/F9INwRZwjiaW2TkP8VTctRE9nlf" target="_blank">
+                <span class="emoji-part">📚</span>
+                <span class="text-part">【MMW攻略组】两歧塔·魔之塔文档攻略</span>
               </a>
             </li>
-            <!-- 🗺️ 攻略链接2：停用 -->
-            <!-- 原链接: https://实际链接2 -->
             <li>
               <a href="#" onclick="return false;" target="_blank">
-                <span class="link-content">🗺️ 【蜃景幻界新月岛 北征之章】岛内攻略笔记</span>
+                <span class="emoji-part">🗺️</span>
+                <span class="text-part">【蜃景幻界新月岛 北征之章】岛内攻略笔记</span>
               </a>
             </li>
           </ul>
-          <strong style="display:block; margin-top:15px;">工具相关（暂未实装）</strong>
+          <strong style="display:block; margin-top:15px;">工具相关</strong>
           <ul class="modal-link-list">
-            <!-- 📝 工具链接：停用 -->
-            <!-- 原链接: https://实际链接3 -->
             <li>
               <a href="#" onclick="return false;" target="_blank">
-                <span class="link-content">📝 【蜃景幻界新月岛 北征之章】岛内CE史官记录工具</span>
+                <span class="emoji-part">📝</span>
+                <span class="text-part">【蜃景幻界新月岛 北征之章】岛内CE史官记录工具</span>
+              </a>
+            </li>
+            <li>
+              <a href="https://xeraikexier.github.io/SA-TOC-Calculator/" target="_blank">
+                <span class="emoji-part">🧮</span>
+                <span class="text-part">【蜃景幻界新月岛】特殊补正计算器</span>
+              </a>
+            </li>
+            <li>
+              <a href="https://xeraikexier.github.io/TOC-MapMaker/" target="_blank">
+                <span class="emoji-part">📌</span>
+                <span class="text-part">【蜃景幻界新月岛】地图点位标记同步工具</span>
               </a>
             </li>
           </ul>
@@ -660,13 +681,14 @@
       <span id="bonusValue">0</span>
     </div>
 
+    <!-- 统一页脚 -->
     <div class="footer">
       Made by <a href="https://space.bilibili.com/24583108" target="_blank">崩小石Xer</a>
       <div>
         <a href="https://github.com/Xeraikexier/SA-TOC-Calculator" target="_blank">项目地址</a> | 
         <a href="#" id="updateLogLink">更新日志</a> | 
         <a href="#" id="groupLink">我要参团</a> | 
-        <a href="#" id="toolsLink">其它工具</a>
+        <a href="#" id="toolsLink">工具链接</a>
       </div>
       <div class="copyright">
         该网页由AI协助制作&nbsp;&nbsp; &nbsp;&nbsp;图标信息等来源于灰机Wiki&nbsp;&nbsp; &nbsp;&nbsp;使用的游戏图片其版权为SQUARE ENIX
@@ -701,7 +723,7 @@
     document.getElementById('groupClose').addEventListener('click', () => closeOverlay('groupOverlay'));
     document.getElementById('groupOverlay').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeOverlay('groupOverlay'); });
 
-    // 其它工具弹窗
+    // 工具链接弹窗
     document.getElementById('toolsLink').addEventListener('click', (e) => { e.preventDefault(); openOverlay('toolsOverlay'); });
     document.getElementById('toolsClose').addEventListener('click', () => closeOverlay('toolsOverlay'));
     document.getElementById('toolsOverlay').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeOverlay('toolsOverlay'); });
